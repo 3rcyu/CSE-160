@@ -1,4 +1,3 @@
-// ColoredPoint.js (c) 2012 matsuda
 // Vertex shader program
 var VSHADER_SOURCE =
   'attribute vec4 a_Position;\n' +
@@ -67,6 +66,7 @@ function connectVariablesToGLSL(){
 const POINT = 0;
 const TRIANGLE = 1;
 const CIRCLE = 2;
+const SPRAY = 3;
 
 let g_selectedColor= [1.0,1.0,1.0,1.0];
 let g_selectedSize = 10;
@@ -84,6 +84,8 @@ function addActionsUI(){
   document.getElementById('pointButton').onclick = function() {g_selectedType=POINT};
   document.getElementById('triButton').onclick = function() {g_selectedType=TRIANGLE};
   document.getElementById('circleButton').onclick = function() {g_selectedType=CIRCLE};
+  document.getElementById('sprayButton').onclick = function() { g_selectedType = SPRAY };
+
 
   //Color Slider
   document.getElementById('redSlider').addEventListener('mouseup', function() {g_selectedColor[0] = this.value/100;});
@@ -144,7 +146,10 @@ function click(ev) {
 
   //Create and store the new point
   let point;
-  if (g_selectedType == POINT){
+  if (g_selectedType == SPRAY) {
+    sprayBrush(x, y);
+  }
+  else if (g_selectedType == POINT){
     point = new Point();
   }
   else if (g_selectedType == TRIANGLE){
@@ -173,6 +178,27 @@ function renderAllShapes(){
     g_shapesList[i].render();
   }
 }
+
+function sprayBrush(centerX, centerY) {
+  const sprayRadius = g_selectedSize / 200; // control size of spray
+  const sprayDensity = 30; // number of dots per spray shot
+
+  for (let i = 0; i < sprayDensity; i++) {
+    const angle = Math.random() * 2 * Math.PI;
+    const radius = Math.random() * sprayRadius;
+
+    const offsetX = Math.cos(angle) * radius;
+    const offsetY = Math.sin(angle) * radius;
+
+    const p = new Point();
+    p.position = [centerX + offsetX, centerY + offsetY];
+    p.color = g_selectedColor.slice();
+    p.size = 2; // small dot size for spray
+    g_shapesList.push(p);
+  }
+  renderAllShapes();
+}
+
 
 function displayDrawing(){
   // Clear canvas
