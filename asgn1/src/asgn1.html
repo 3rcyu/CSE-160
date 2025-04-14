@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Change a point color</title>
+  </head>
+
+  <body onload="main()">
+    <canvas id="webgl" width="400" height="400">
+    Please use a browser that supports "canvas"
+    </canvas>
+
+    <div class="controls">
+      <p>
+        <button type="button" id="clearButton">Clear Canvas</button>
+        <button type="button" id="pointButton">Squares</button>
+        <button type="button" id="triButton">Triangles</button>
+        <button type="button" id="circleButton">Circles</button>
+        <button type="button" id="drawButton">My Drawing</button>
+      
+      <div>
+        <label>Red:</label>
+        <input type="range" min="0" max="100" value="0" class="slider" id="redSlider"> 
+        <label>Green:</label>
+        <input type="range" min="0" max="100" value="0" class="slider" id="greenSlider">
+        <label>Blue:</label>
+        <input type="range" min="0" max="100" value="0" class="slider" id="blueSlider">
+      </div>
+  
+      <div>
+        <label>Shape Size:</label>
+        <input type="range" id="sizeSlider" min="5" max="40" value="10">
+      </div>
+  
+      <div>
+        <label>Circle Segment Count:</label>
+        <input type="range" id="segmentSlider" min="3" max="20" value="10">
+      </div>
+  
+    </div>
+
+    <script src="lib/webgl-utils.js"></script>
+    <script src="lib/webgl-debug.js"></script>
+    <script src="lib/cuon-utils.js"></script>
+    <script src="Point.js"></script>
+    <script src="ColoredPoints.js"></script>
+    <script src="Triangle.js"></script>
+    <script src="Circle.js"></script>
+  </body>
+</html>
