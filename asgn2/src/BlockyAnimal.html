@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Change a point color</title>
+  </head>
+
+  <body onload="main()">
+    <canvas id="webgl" width="400" height="400">
+    Please use a browser that supports "canvas"
+    </canvas>
+
+    <div class="controls">
+      <p id="numdot"> XXX </p>
+
+      <div>
+  
+      </div>
+  
+      
+      <p>Left Arm: <input type="range" min="-45" max="45" value="0" id="rightArmSlider"></p>
+      <p>Right Arm: <input type="range" min="-45" max="45" value="0" id="leftArmSlider"></p>
+      <p>
+      Wand: <input type="range" min="-15" max="15" value="0" id="wandSlider">
+      Wand Tip: <input type="range" min="-30" max="30" value="0" id="starSlider">
+      <p>
+      <label>Left Foot:</label>
+        <input type="range" min="-45" max="45" value="0" class="slider" id="rightFootSlider">
+      <label>Left Tippy Toes:</label>
+        <input type="range" min="-2" max="4" value="0" class="slider" id="rightFoot2Slider">
+        Float Animation:
+          <button type="button" id="animationFloatOnButton">ON</button>
+          <button type="button" id="animationFloatOffButton">OFF</button>
+      <p>
+      <label>Right Foot:</label>
+        <input type="range" min="-45" max="45" value="0" class="slider" id="leftFootSlider">
+      <label>Right Tippy Toes:</label>
+        <input type="range" min="-4" max="2" value="0" class="slider" id="leftFoot2Slider">
+        Run Animation:
+          <button type="button" id="animationRunOnButton">ON</button>
+          <button type="button" id="animationRunOffButton">OFF</button>
+
+      <div>
+        <label>Camera Angle:</label>
+        <input type="range" min="-360" max="360" value="0" class="slider" id="angleSlider">
+      </div>
+      <!-- Dropdown Section -->
+      <div id="notesSection">
+        <h3 onclick="toggleNotes()" style="cursor:pointer;">▼ Notes for Graders</h3>
+        <div id="notesContent" style="display:none; margin-left:10px;">
+          <p>Click and drag to pan</p>
+          <p>Shift click to have Kirby wave his wand.</p>
+          <p>Kirby's arm and wand are considered my third-level joint.</p>
+        </div>
+      </div>
+
+
+    </div>
+
+    <script src="lib/webgl-utils.js"></script>
+    <script src="lib/webgl-debug.js"></script>
+    <script src="lib/cuon-utils.js"></script>
+    <script src="lib/cuon-matrix.js"></script>
+    <script src="Point.js"></script>
+    <script src="Triangle.js"></script>
+    <script src="Circle.js"></script>
+    <script src="Cube.js"></script>
+    <script src="Sphere.js"></script>
+    <script src="DustPuff.js"></script>
+    <script src="BlockyAnimal.js"></script>
+    <script>
+    function toggleNotes() {
+      const content = document.getElementById('notesContent');
+      if (content.style.display === 'none') {
+        content.style.display = 'block';
+      } else {
+        content.style.display = 'none';
+      }
+    }
+    </script>
+  </body>
+</html>
