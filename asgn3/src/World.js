@@ -334,7 +334,7 @@ function main() {
 
   initTextures();
   
-  
+  /*
   canvas.onmousedown = function(ev) {
     g_mouseDown = true;
     g_lastX = ev.clientX;
@@ -361,8 +361,9 @@ function main() {
   
       //renderAllShapes();
     }
+    
   };
-  
+  */
   
   // Specify the color for clearing <canvas>
   gl.clearColor(0.0, 0.0, 0.5, 1.0);
@@ -388,9 +389,19 @@ function enablePointerLockControls(canvas) {
 }
 
 function onMouseMove(e) {
-  const yawSpeed = e.movementX * 0.002;        // ← reversed
-  const pitchSpeed = -e.movementY * 0.002;     // keep pitch direction
-  g_camera.rotateYaw(pitchSpeed, yawSpeed);
+  //const yawSpeed = e.movementX * 0.002;        // ← reversed
+  //const pitchSpeed = -e.movementY * 0.002;     // keep pitch direction
+  //g_camera.rotateYaw(pitchSpeed, yawSpeed);
+  
+  const panAmount = e.movementX * 0.1; // sensitivity (tweak as needed)
+  
+    if (panAmount > 0) {
+      g_camera.panRight(panAmount);
+    } else if (panAmount < 0) {
+      g_camera.panLeft(-panAmount);
+    }
+  
+
   renderAllShapes();
 }
 
@@ -409,12 +420,81 @@ function tick(){
   g_seconds = performance.now()/1000.0 - g_startTime;
   //console.log(g_seconds);
   updateAnimationAngles();
+  updateKirbyNPC();
   //Draw everything
   renderAllShapes();
   //Tell browser to update again when it has time
   requestAnimationFrame(tick);
 }
 
+let kirbyLastTurn = 0;
+
+function updateKirby() {
+  // Randomly change direction occasionally
+  if (Math.random() < 0.01) { // 1% chance each frame
+    const angle = Math.random() * 2 * Math.PI;
+    kirbyDir.elements[0] = Math.cos(angle);
+    kirbyDir.elements[2] = Math.sin(angle);
+  }
+
+  // Move Kirby forward
+  let movement = new Vector3(kirbyDir.elements);
+  movement.normalize();
+  movement.mul(kirbySpeed);
+  kirbyPos.add(movement);
+
+  // Update Kirby's facing angle in degrees
+  kirbyAngle = Math.atan2(kirbyDir.elements[0], kirbyDir.elements[2]) * (180 / Math.PI);
+}
+
+function updateKirbyNPC() {
+  const moveSpeed = 0.02;
+
+  // Next target position
+  let nextX = kirbyPos.elements[0] + kirbyDir.elements[0] * moveSpeed;
+  let nextZ = kirbyPos.elements[2] + kirbyDir.elements[2] * moveSpeed;
+
+  // Convert to grid coordinates
+  let mapX = Math.floor(nextX + g_map.length / 2);
+  let mapZ = Math.floor(nextZ + g_map[0].length / 2);
+
+  // Check bounds
+  const isInBounds = (x, z) => x >= 0 && z >= 0 && x < g_map.length && z < g_map[0].length;
+
+  // If it's a valid move (no terrain), update position
+  if (isInBounds(mapX, mapZ) && g_map[mapX][mapZ] === 0) {
+    kirbyPos.elements[0] = nextX;
+    kirbyPos.elements[2] = nextZ;
+  } else {
+    // Randomly choose a new direction
+    const directions = [
+      new Vector3([1, 0, 0]),
+      new Vector3([-1, 0, 0]),
+      new Vector3([0, 0, 1]),
+      new Vector3([0, 0, -1])
+    ];
+    kirbyDir = directions[Math.floor(Math.random() * directions.length)];
+  }
+
+  // Update angle to face direction
+  kirbyAngle = Math.atan2(kirbyDir.elements[2], kirbyDir.elements[0]) * 180 / Math.PI;
+}
+
+/*
+function updateKirbyMovement() {
+  // Move forward
+  let move = new Vector3(kirbyDir.elements);
+  move.normalize();
+  move.mul(kirbySpeed);
+  kirbyPos.add(move);
+
+  // Occasionally change direction randomly
+  if (Math.random() < 0.01) {
+    let angle = Math.random() * Math.PI * 2;
+    kirbyDir = new Vector3([Math.cos(angle), 0, Math.sin(angle)]);
+  }
+}
+*/
 function updateAnimationAngles(){
   if(g_runAnimation){
     g_floatAnimation = false;
@@ -486,11 +566,12 @@ function keydown(ev){
 }
 
 
-
+/*
 var g_eye = [0,0,3];
 var g_at = [0,0,-100];
 var g_up = [0,1,0];
-
+*/
+/*
 var g_map = [
 [1, 1, 1, 1, 1, 1, 1, 1], // 1=wall 0= no wall
 [1, 0, 0, 0, 0, 0, 0, 1],
@@ -501,7 +582,39 @@ var g_map = [
 [1, 0, 0, 0, 1, 0, 0, 1],
 [1, 0, 0, 0, 0, 0, 0, 1],
 ];
+*/
 
+const g_map = [];
+for (let i = 0; i < 32; i++) {
+  g_map[i] = [];
+  for (let j = 0; j < 32; j++) {
+    // Fill edges with height 1, rest with 0 or use your original logic
+    if (i === 0 || j === 0 || i === 31 || j === 31) {
+      g_map[i][j] = 1;  // border walls
+    } else {
+      g_map[i][j] = 0;  // empty ground
+    }
+  }
+}
+
+// (Optional) Paste your custom 8x8 map data into the center
+const miniMap = [
+  [1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 1, 2, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+  [1, 0, 0, 0, 1, 0, 0, 1],
+  [1, 0, 0, 0, 0, 0, 0, 1],
+];
+
+for (let i = 0; i < 8; i++) {
+  for (let j = 0; j < 8; j++) {
+    g_map[12 + i][12 + j] = miniMap[i][j]; // center it
+  }
+}
+//floor
 function drawMap() {
   const body = new Cube(); // Create only once
   body.textureNum = 1;
@@ -516,6 +629,27 @@ function drawMap() {
     }
   }
 }
+
+function generateTerrain() {
+  for (let x = 0; x < g_map.length; x++) {
+    for (let z = 0; z < g_map[x].length; z++) {
+      if (g_map[x][z] === 0) {
+        let rand = Math.random();
+
+        // 70% chance to stay flat, 20% chance height 1, 10% chance height 2
+        if (rand < 0.2) {
+          g_map[x][z] = 1;
+        } else if (rand < 0.3) {
+          g_map[x][z] = 2;
+        } else {
+          g_map[x][z] = 0;
+        }
+      }
+    }
+  }
+}
+
+
 
 
 function drawMap2() {
@@ -536,8 +670,14 @@ function drawMap2() {
   }
 }
 
+let kirbyPos = new Vector3([0, 0, 0]);
+let kirbyDir = new Vector3([1, 0, 0]);
+let kirbyAngle = 0;
+let kirbySpeed = 0.02;
 
-
+//let kirbyPos = new Vector3([0, 0, 0]);
+//let kirbyDir = new Vector3([1, 0, 0]); // initial direction
+//let kirbySpeed = 0.02;
 
 function renderAllShapes(){
   var startTime = performance.now();
@@ -586,6 +726,7 @@ function renderAllShapes(){
   //drawTriangle3D([-1.0,0.0,0.0, -0.5,-1.0,0.0, 0.0,0.0,0.0]);
   
   drawMap();
+  //generateTerrain();
   drawMap2();
   /*
   //Draw the floor
@@ -668,16 +809,22 @@ function renderAllShapes(){
   }
   */
   
-  /*
+  
   // -------- Kirby --------
 
   // FLOATING OFFSET
-  var floatOffset = g_floatOffset;
+  //var floatOffset = g_floatOffset;
+
   // ----- KIRBY -----
 
-  let kirbyCenterX = 0.0;
-  let kirbyCenterY = 0.0 + floatOffset;
-  let kirbyCenterZ = 0.0;
+  //let kirbyCenterX = 0.0;
+  //let kirbyCenterY = 0.0 + floatOffset;
+  //let kirbyCenterZ = 0.0;
+
+  let kirbyCenterX = kirbyPos.elements[0];
+  let kirbyCenterY = kirbyPos.elements[1];
+  let kirbyCenterZ = kirbyPos.elements[2];
+
 
   // Fake shadow when float
   if(g_floatAnimation){
@@ -688,11 +835,20 @@ function renderAllShapes(){
     shadow.render();
   }
 
-
+  /*
   // BODY
   var body = new Sphere();
   body.color = [1.0, 0.6, 0.8, 1.0]; // Light pink
   body.matrix.translate(kirbyCenterX - 0.375, kirbyCenterY - 0.375, kirbyCenterZ - 0.375);
+  body.matrix.scale(0.75, 0.75, 0.75);
+  body.render();
+  */
+
+  var body = new Sphere();
+  body.color = [1.0, 0.6, 0.8, 1.0]; // Light pink
+  body.matrix.translate(kirbyCenterX, kirbyCenterY, kirbyCenterZ);
+  body.matrix.rotate(kirbyAngle, 0, 1, 0); // <--- rotate toward movement direction
+  body.matrix.translate(-0.375, -0.375, -0.375); // Center Kirby
   body.matrix.scale(0.75, 0.75, 0.75);
   body.render();
 
@@ -715,7 +871,7 @@ function renderAllShapes(){
   rightArm.matrix.rotate(-g_rightArmAngle,1,0,0);
   rightArm.matrix.scale(0.3, 0.2, 0.2);
   rightArm.render();
-
+  /*
   // MAGIC WAND
   var wand = new Cube();
   wand.color = [1.0, 0.8, 0.2, 1.0]; // Golden yellow wand
@@ -735,7 +891,7 @@ function renderAllShapes(){
   wandStar.matrix.scale(2.2, 0.2, 2.2);
   wandStar.matrix.rotate(g_wandStar, 1, 1, 0); 
   wandStar.render();
-
+  */
 
   // LEFT FOOT
   var leftFoot = new Cube();
@@ -842,7 +998,7 @@ function renderAllShapes(){
   rightBlush.matrix.translate(kirbyCenterX + 0.15, kirbyCenterY + 0.02, kirbyCenterZ - 0.35);
   rightBlush.matrix.scale(0.08, 0.04, 0.01);
   rightBlush.render();
-  */
+  
   
   //check performance
   var duration = performance.now() - startTime;
