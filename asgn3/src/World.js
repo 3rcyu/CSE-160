@@ -205,26 +205,7 @@ let g_camera;
 
 
 function addActionsUI(){
-  //Button Events
-  document.getElementById('animationRunOffButton').onclick = function() {g_runAnimation=false;};
-  document.getElementById('animationRunOnButton').onclick = function() {g_runAnimation=true; g_floatAnimation = false;};
-
-  document.getElementById('animationFloatOffButton').onclick = function() {g_floatAnimation=false;};
-  document.getElementById('animationFloatOnButton').onclick = function() {g_floatAnimation=true; g_runAnimation = false;};
-
-  document.getElementById('wandSlider').addEventListener('mousemove', function() {g_wandAngle = this.value; renderAllShapes(); });
-  document.getElementById('starSlider').addEventListener('mousemove', function() {g_wandStar = this.value; renderAllShapes(); });
-  document.getElementById('leftArmSlider').addEventListener('mousemove', function() {g_leftArmAngle = this.value; renderAllShapes(); });
-  document.getElementById('rightArmSlider').addEventListener('mousemove', function() {g_rightArmAngle = this.value; renderAllShapes(); });
-
-  document.getElementById('leftFootSlider').addEventListener('mousemove', function() {g_leftFootAngle = this.value; renderAllShapes(); });
-  document.getElementById('leftFoot2Slider').addEventListener('mousemove', function() {g_leftFoot2Angle = this.value; renderAllShapes(); });
-
-  document.getElementById('rightFootSlider').addEventListener('mousemove', function() {g_rightFootAngle = this.value; renderAllShapes(); });
-  document.getElementById('rightFoot2Slider').addEventListener('mousemove', function() {g_rightFoot2Angle = this.value; renderAllShapes(); });
-  //document.getElementById('segmentSlider').addEventListener('mouseup', function() {g_selectedSegments = this.value;});
-  //RotateSlider
-  document.getElementById('angleSlider').addEventListener('mousemove', function() {g_globalAngleY = this.value; renderAllShapes(); });
+  //document.getElementById('angleSlider').addEventListener('mousemove', function() {g_globalAngleY = this.value; renderAllShapes(); });
 }
 
 function initTextures(gl, n) {
@@ -492,6 +473,12 @@ function keydown(ev){
   else if(ev.keyCode == 69){ // E key - pan right
       g_camera.panRight(angle);
   }
+  if(ev.keyCode == 32){ // space key - move up
+    g_camera.moveUp(speed);
+  } else
+  if(ev.keyCode == 16){ // Shift key - move down
+    g_camera.moveDown(speed);
+  }
   
   
   renderAllShapes();
@@ -515,47 +502,40 @@ var g_map = [
 [1, 0, 0, 0, 0, 0, 0, 1],
 ];
 
-function drawMap(){
-  //var body = new Cube();
-  for (x = 0; x < 32; x++){
-    for ( y=0; y < 32; y++){
-      //console.log(x,y);
-      /*
-      if (g_map[x][y] == 1){
-        var body = new Cube();
-        body.color = [1.0,1.0, 1.0, 1.0];
-        body.matrix.translate(x-4, -.75, y-4);
-        body.render();
-      }
-      */
-      //if (x<1 || x==31 || y==0 || y==31){
-        var body = new Cube();
-        body.textureNum = 1;
-        body.color = [0.8,1.0, 1.0, 1.0];
-        body.matrix.translate(0,-.75,0);
-        //body.matrix.scale(.4,.4,.4)
-        body.matrix.translate(x-16, -1, y-16);
-        //body.render();
-        body.renderFaster();
-      //}
+function drawMap() {
+  const body = new Cube(); // Create only once
+  body.textureNum = 1;
+  body.color = [0.8, 1.0, 1.0, 1.0];
+
+  for (let x = 0; x < 32; x++) {
+    for (let y = 0; y < 32; y++) {
+      let matrix = new Matrix4();
+      matrix.translate(x - 16, -1.75, y - 16);
+      body.matrix = matrix;
+      body.renderFaster();
     }
   }
 }
 
+
 function drawMap2() {
+  const cube = new Cube(); // Create only once
+  cube.textureNum = 2;
+  cube.color = [1.0, 1.0, 1.0, 1.0];
+
   for (let x = 0; x < g_map.length; x++) {
     for (let z = 0; z < g_map[x].length; z++) {
       let height = g_map[x][z];
       for (let y = 0; y < height; y++) {
-        let cube = new Cube();
-        cube.textureNum = 2; // Or use 0/2 based on type
-        cube.color = [1.0, 1.0, 1.0, 1.0]; // or choose per-height for gradient
-        cube.matrix.translate(x - g_map.length / 2, y - 1, z - g_map[x].length / 2);
+        let matrix = new Matrix4();
+        matrix.translate(x - g_map.length / 2, y - 1, z - g_map[x].length / 2);
+        cube.matrix = matrix;
         cube.renderFaster();
       }
     }
   }
 }
+
 
 
 
@@ -623,8 +603,8 @@ function renderAllShapes(){
   //sky.textureNum = 1;
   sky.matrix.scale(50,50, 50);
   sky.matrix.translate(-.5, -.5, -0.5);
-  sky.render();
-
+  sky.renderFaster();
+  /*
   //Draw a cube
   var body = new Cube();
   body.color = [1.0,0.0,0.0,1.0];
@@ -633,7 +613,7 @@ function renderAllShapes(){
   body.matrix.rotate(-5,1,0,0);
   body.matrix.scale(0.5, .3, .5);
   body.render();
-
+  */
   /*
   //Draw a left arm
   var leftArm = new Cube();

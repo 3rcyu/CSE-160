@@ -21,24 +21,28 @@ class Camera {
     }
   
     moveForward(speed = 0.2) {
-      let f = new Vector3(this.at.elements);
-      f = f.sub(this.eye);
-      f.normalize();
-      f = f.mul(speed);
-      this.eye = this.eye.add(f);
-      this.at = this.at.add(f);
-      this.updateView();
-    }
-  
-    moveBackwards(speed = 0.2) {
-      let b = new Vector3(this.eye.elements);
-      b = b.sub(this.at);
-      b.normalize();
-      b = b.mul(speed);
-      this.eye = this.eye.add(b);
-      this.at = this.at.add(b);
-      this.updateView();
-    }
+        let f = new Vector3(this.at.elements);
+        f.sub(this.eye);
+        f.elements[1] = 0; // <-- Ignore vertical component
+        f.normalize();
+        f.mul(speed);
+        this.eye.add(f);
+        this.at.add(f);
+        this.updateView();
+      }
+      moveBackwards(speed = 0.2) {
+        let b = new Vector3(this.eye.elements);  // b = eye
+        b.sub(this.at);                          // b = eye - at
+        b.elements[1] = 0;                       // zero out vertical movement
+        b.normalize();
+        b.mul(speed);
+        this.eye.add(b);
+        this.at.add(b);
+        this.updateView();
+      }
+      
+      
+      
   
     moveLeft(speed = 0.2) {
       let f = new Vector3(this.at.elements);
@@ -76,6 +80,25 @@ class Camera {
     panRight(angle = 3) {
       this.panLeft(-angle);
     }
+
+    moveUp(speed = 0.2) {
+        let up = new Vector3(this.up.elements);
+        up.normalize();
+        up.mul(speed);
+        this.eye.add(up);
+        this.at.add(up);
+        this.updateView();
+      }
+      
+      moveDown(speed = 0.2) {
+        let down = new Vector3(this.up.elements);
+        down.normalize();
+        down.mul(speed);
+        this.eye.sub(down);
+        this.at.sub(down);
+        this.updateView();
+      }
+      
 
     rotateYaw(pitchDelta, yawDelta) {
         // Step 1: get direction vector
