@@ -407,11 +407,12 @@ function enablePointerLockControls(canvas) {
 }
 
 function onMouseMove(e) {
-  const yawSpeed = -e.movementX * 0.002;
-  const pitchSpeed = -e.movementY * 0.002;
+  const yawSpeed = e.movementX * 0.002;        // ← reversed
+  const pitchSpeed = -e.movementY * 0.002;     // keep pitch direction
   g_camera.rotateYaw(pitchSpeed, yawSpeed);
   renderAllShapes();
 }
+
 
 var g_shapesList = [];
 //var g_points = [];  // The array for the position of a mouse press
