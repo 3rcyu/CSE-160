@@ -1,6 +1,6 @@
 class Camera {
     constructor(canvas) {
-      this.fov = 60;
+      this.fov = 90;
       this.eye = new Vector3([0, 0, 0]);
       this.at = new Vector3([0, 0, -1]);
       this.up = new Vector3([0, 1, 0]);
@@ -116,37 +116,6 @@ class Camera {
       
       panDown(angle = 3) {
         this.panUp(-angle);
-      }
-      
-      
-
-    rotateYaw(pitchDelta, yawDelta) {
-        // Step 1: get direction vector
-        let dir = new Vector3(this.at.elements);
-        dir.sub(this.eye);
-        let r = dir.magnitude();
-      
-        // Step 2: calculate current yaw (theta) and pitch (phi)
-        let theta = Math.atan2(dir.elements[2], dir.elements[0]); // yaw (around Y)
-        let phi = Math.asin(dir.elements[1] / r);                 // pitch (up/down)
-      
-        // Step 3: apply deltas
-        theta += yawDelta;
-        phi += pitchDelta;
-      
-        // Clamp pitch to avoid flipping
-        const limit = Math.PI / 2 - 0.1;
-        phi = Math.max(-limit, Math.min(limit, phi));
-      
-        // Step 4: convert back to direction vector
-        dir.elements[0] = r * Math.cos(phi) * Math.cos(theta);
-        dir.elements[1] = r * Math.sin(phi);
-        dir.elements[2] = r * Math.cos(phi) * Math.sin(theta);
-      
-        // Step 5: update camera look-at target
-        this.at = new Vector3(this.eye.elements); // reset at = eye
-        this.at.add(dir);                         // offset direction
-        this.updateView();
       }
       
   }
