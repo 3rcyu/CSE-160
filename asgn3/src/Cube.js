@@ -9,29 +9,44 @@ class Cube{
         this.textureNum=-2;
 
         this.cubeVert32 = new Float32Array([
-            0,0,0,  1,1,0,  1,0,0
-            ,
-            0,0,0,  0,1,0,  1,1,0
-            ,
-            0,1,0,  0,1,1,  1,1,1
-            ,
-            0,1,0,  1,1,1,  1,1,0
-            ,
-            1,1,0,  1,1,1,  1,0,0
-            ,
-            1,0,0,  1,1,1,  1,0,1
-            ,
-            0,1,0,  0,1,1,  0,0,0
-            ,
-            0,0,0,  0,1,1,  0,0,1
-            ,
-            0,0,0,  0,0,1,  1,0,1
-            ,
-            0,0,0,  1,0,1,  1,0,0
-            ,
-            0,0,1,  1,1,1,  1,0,1
-            ,
-            0,0,1,  0,1,1,  1,1,1
+            //front
+            1,0,0,   0,0,0,  0,1,0, 
+            1,0,0,   0,1,0,  1,1,0,
+            //top
+            0,1,1,   1,1,1,  1,1,0, 
+            0,1,1,   1,1,0,  0,1,0,
+            //back
+            0,0,1,   1,0,1,  1,1,1, 
+            0,0,1,   1,1,1,  0,1,1,
+            //left
+            0,0,0,   0,0,1,  0,1,1, 
+            0,0,0,   0,1,1,  0,1,0,
+            //right
+            1,0,1,   1,0,0,  1,1,0,
+            1,0,1,   1,1,0,  1,1,1,   
+            //bottom
+            1,0,1,   0,0,1,  0,0,0,
+            1,0,1,   0,0,0,  1,0,0
+        ]);
+        this.vertUV = new Float32Array([
+        
+        0.25,0.25,   0.50,0.25,   0.50,0.50, //front
+        0.25,0.25,   0.50,0.50,   .25,0.50,
+
+        0.25,0.5,   0.50,0.50,   0.5,0.75, //top
+        0.25,0.5,   0.5,0.75,   0.25,0.75,
+
+        0.75,0.25,   1.0,0.25,   1.0,0.50, //back
+        0.75,0.25,   1.0,0.50,   0.75,0.50,
+
+        0.0,0.25,   0.25,0.25,   0.25,0.50, //left
+        0.0,0.25,   0.25,0.50,   0.0,0.50,
+
+        0.50,0.25,   0.75,0.25,   0.75,0.50, //right
+        0.50,0.25,   0.75,0.50,   0.50,0.50,
+
+        0.25,0.0,   0.5,0,   0.5,0.25, //bottom
+        0.25,0.0,   0.5,.25,   0.25,0.25,
         ]);
     }
     render(){
@@ -151,40 +166,18 @@ class Cube{
             initTriangleBuffer3D();
         }
     
-        // Create and bind position buffer
-        const vertPos = this.cubeVert32; // 36 verts, x/y/z (already defined)
-        const vertUV = new Float32Array([
-            // 6 faces × 2 triangles × 3 verts × 2 UV coords
-            0,0, 1,1, 1,0,
-            0,0, 0,1, 1,1,
-
-            0,0, 0,1, 1,1,
-            0, 0,  1, 1,  1, 0,
-
-            0, 0,  1, 1,  1, 0,
-            0, 0,  0, 1,  1, 1,
-
-            0, 0,  1, 0,  1, 1,
-            0, 0,  1, 1,  0, 1,
-
-            0, 0,  1, 1,  1, 0,
-            0, 0,  0, 1,  1, 1,
-
-            0, 0,  1, 1,  1, 0,
-            0, 0,  0, 1,  1, 1,
-        ]);
 
         // -- Position Buffer --
         let posBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, vertPos, gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, this.cubeVert32, gl.STATIC_DRAW);
         gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(a_Position);
 
         // -- UV Buffer --
         let uvBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, vertUV, gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, this.vertUV, gl.STATIC_DRAW);
         gl.vertexAttribPointer(a_UV, 2, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(a_UV);
 

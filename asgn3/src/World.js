@@ -189,7 +189,7 @@ let g_wandStar = 0;
 let g_globalAngle = 0;
 let g_runAnimation = false;
 let g_floatAnimation = false;
-let g_wandWaving = false;
+//let g_wandWaving = false;
 
 
 let g_mouseDown = false;
@@ -240,13 +240,13 @@ function initTextures(gl, n) {
   image1.onload = function() {
     sendTextureToGLSL(image1, 1); // bind to TEXTURE1
   };
-  image1.src = 'pixelgrass.png';
+  image1.src = 'Grass.png';
 
   let image2 = new Image();
   image2.onload = function() {
     sendTextureToGLSL(image2, 2); // bind to TEXTURE1
   };
-  image2.src = 'stone.png';
+  image2.src = 'cobble.png';
 
   return true;
 }
@@ -314,8 +314,6 @@ function main() {
   connectVariablesToGLSL();
   
   addActionsUI();
-
-  //initTriangleBuffer3D(gl);
   /*
   // Register function (event handler) to be called on a mouse press
   canvas.onmousedown = click;
@@ -333,8 +331,24 @@ function main() {
   enablePointerLockControls(canvas);
 
   initTextures();
+
+
+  canvas.addEventListener("contextmenu", function (e) {
+    e.preventDefault(); // prevents right-click menu
+  }, false);
   
-  /*
+
+  canvas.addEventListener("mousedown", function (ev) {
+    if (ev.button === 0) {
+      modifyBlock("add");
+    } else if (ev.button === 2) {
+      modifyBlock("remove");
+    }
+    renderAllShapes();
+  });
+  
+  
+  
   canvas.onmousedown = function(ev) {
     g_mouseDown = true;
     g_lastX = ev.clientX;
@@ -344,36 +358,61 @@ function main() {
   canvas.onmouseup = function(ev) {
     g_mouseDown = false;
   };
-
+  
   canvas.onmousemove = function(ev) {
-    if (g_mouseDown) {
-      let deltaX = ev.clientX - g_lastX;
-      let deltaY = ev.clientY - g_lastY;
-  
-      g_globalAngleY -= deltaX * 0.5; // horizontal mouse -> rotate around Y axis
-      g_globalAngleX -= deltaY * 0.5; // vertical mouse -> rotate around X axis
-  
-      // Clamp the X angle so you can't flip over completely (optional)
-      g_globalAngleX = Math.max(Math.min(g_globalAngleX, 90), -90);
-  
-      g_lastX = ev.clientX;
-      g_lastY = ev.clientY;
-  
-      //renderAllShapes();
+    
+    const sensitivity = 0.2;
+
+    if (ev.movementX > 0) {
+      g_camera.panRight(ev.movementX * sensitivity);
+    } else if (e.movementX < 0) {
+      g_camera.panLeft(-ev.movementX * sensitivity);
     }
+  
+    if (ev.movementY > 0) {
+      g_camera.panDown(ev.movementY * sensitivity);
+    } else if (ev.movementY < 0) {
+      g_camera.panUp(-ev.movementY * sensitivity);
+    }
+  
+    renderAllShapes();
+    
     
   };
-  */
+  
   
   // Specify the color for clearing <canvas>
   gl.clearColor(0.0, 0.0, 0.5, 1.0);
 
-  // Clear <canvas>
-  //gl.clear(gl.COLOR_BUFFER_BIT);
-
-  //renderAllShapes();
   requestAnimationFrame(tick);
 }
+
+function modifyBlock(action) {
+  const dir = new Vector3(g_camera.at);
+  dir.sub(g_camera.eye);
+  dir.normalize();
+
+  const steps = 10;
+  for (let i = 1; i < steps; i++) {
+    let pos = new Vector3(dir);
+    pos.mul(i * 0.2);
+    pos.add(g_camera.eye);
+
+    let x = Math.floor(pos.elements[0] + g_map.length / 2);
+    let z = Math.floor(pos.elements[2] + g_map[0].length / 2);
+
+    if (x >= 0 && x < g_map.length && z >= 0 && z < g_map[0].length) {
+      if (action === "remove" && g_map[x][z] > 0) {
+        g_map[x][z] -= 1;
+        break;
+      } else if (action === "add") {
+        g_map[x][z] += 1;
+        break;
+      }
+    }
+  }
+}
+
 
 function enablePointerLockControls(canvas) {
   canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
@@ -420,81 +459,14 @@ function tick(){
   g_seconds = performance.now()/1000.0 - g_startTime;
   //console.log(g_seconds);
   updateAnimationAngles();
-  updateKirbyNPC();
+
   //Draw everything
   renderAllShapes();
   //Tell browser to update again when it has time
   requestAnimationFrame(tick);
 }
 
-let kirbyLastTurn = 0;
 
-function updateKirby() {
-  // Randomly change direction occasionally
-  if (Math.random() < 0.01) { // 1% chance each frame
-    const angle = Math.random() * 2 * Math.PI;
-    kirbyDir.elements[0] = Math.cos(angle);
-    kirbyDir.elements[2] = Math.sin(angle);
-  }
-
-  // Move Kirby forward
-  let movement = new Vector3(kirbyDir.elements);
-  movement.normalize();
-  movement.mul(kirbySpeed);
-  kirbyPos.add(movement);
-
-  // Update Kirby's facing angle in degrees
-  kirbyAngle = Math.atan2(kirbyDir.elements[0], kirbyDir.elements[2]) * (180 / Math.PI);
-}
-
-function updateKirbyNPC() {
-  const moveSpeed = 0.02;
-
-  // Next target position
-  let nextX = kirbyPos.elements[0] + kirbyDir.elements[0] * moveSpeed;
-  let nextZ = kirbyPos.elements[2] + kirbyDir.elements[2] * moveSpeed;
-
-  // Convert to grid coordinates
-  let mapX = Math.floor(nextX + g_map.length / 2);
-  let mapZ = Math.floor(nextZ + g_map[0].length / 2);
-
-  // Check bounds
-  const isInBounds = (x, z) => x >= 0 && z >= 0 && x < g_map.length && z < g_map[0].length;
-
-  // If it's a valid move (no terrain), update position
-  if (isInBounds(mapX, mapZ) && g_map[mapX][mapZ] === 0) {
-    kirbyPos.elements[0] = nextX;
-    kirbyPos.elements[2] = nextZ;
-  } else {
-    // Randomly choose a new direction
-    const directions = [
-      new Vector3([1, 0, 0]),
-      new Vector3([-1, 0, 0]),
-      new Vector3([0, 0, 1]),
-      new Vector3([0, 0, -1])
-    ];
-    kirbyDir = directions[Math.floor(Math.random() * directions.length)];
-  }
-
-  // Update angle to face direction
-  kirbyAngle = Math.atan2(kirbyDir.elements[2], kirbyDir.elements[0]) * 180 / Math.PI;
-}
-
-/*
-function updateKirbyMovement() {
-  // Move forward
-  let move = new Vector3(kirbyDir.elements);
-  move.normalize();
-  move.mul(kirbySpeed);
-  kirbyPos.add(move);
-
-  // Occasionally change direction randomly
-  if (Math.random() < 0.01) {
-    let angle = Math.random() * Math.PI * 2;
-    kirbyDir = new Vector3([Math.cos(angle), 0, Math.sin(angle)]);
-  }
-}
-*/
 function updateAnimationAngles(){
   if(g_runAnimation){
     g_floatAnimation = false;
@@ -525,10 +497,6 @@ function updateAnimationAngles(){
     g_leftFootAngle = -80;
     g_rightFootAngle = -80;
   }
-
-  if (g_wandWaving) {
-    g_wandAngle = 20 * Math.sin(5 * g_seconds); 
-  }
   
 }
 
@@ -556,7 +524,7 @@ function keydown(ev){
   if(ev.keyCode == 32){ // space key - move up
     g_camera.moveUp(speed);
   } else
-  if(ev.keyCode == 16){ // Shift key - move down
+  if(ev.keyCode == 90){ // Z key - move down
     g_camera.moveDown(speed);
   }
   
@@ -623,7 +591,7 @@ function drawMap() {
   for (let x = 0; x < 32; x++) {
     for (let y = 0; y < 32; y++) {
       let matrix = new Matrix4();
-      matrix.translate(x - 16, -1.75, y - 16);
+      matrix.translate(x - 16, -2, y - 16);
       body.matrix = matrix;
       body.renderFaster();
     }
@@ -756,13 +724,6 @@ function renderAllShapes(){
   body.render();
   */
   /*
-  //Draw a left arm
-  var leftArm = new Cube();
-  leftArm.color = [1.0,1.0,0.0,1.0];
-  leftArm.matrix.setTranslate(0, -.5, 0.0);
-  leftArm.matrix.rotate(-5, 1, 0, 0);
-  leftArm.matrix.rotate(-g_yellowAngle, 0, 0, 1);
-  leftArm.render();
   
   
   //if(g_yellowAnimation){
@@ -772,30 +733,6 @@ function renderAllShapes(){
   //  leftArm.matrix.rotate(-g_yellowAngle, 0, 0, 1);
   //}
   
-
-  var yellowCoordinatesMat = new Matrix4(leftArm.matrix);
-  leftArm.matrix.scale(0.25, .7, .5);
-  leftArm.matrix.translate(-.5, 0, 0.0);
-  leftArm.render();
-
-  //Test box
-  var box = new Cube();
-  box.color = [1.0,0.0,1.0,1.0];
-  box.matrix = yellowCoordinatesMat;
-  box.matrix.translate(0,.65, 0);
-  box.matrix.rotate(g_magentaAngle,0,0,1)
-  box.matrix.scale(0.3, .3, .3);
-  box.matrix.translate(-.5,0, -0.001);
-  box.render();
-  
-  var k=20;
-  for(var i=1; i<k; i++){
-    var c = new Cube();
-    c.matrix.translate(-.8,1.9*i/k-1.0,0);
-    c.matrix.rotate(g_seconds*100,1,1,1);
-    c.matrix.scale(.1,.5/k,1.0/k);
-    c.render();
-  }
   */
   /*
   // Draw dust puffs
@@ -820,7 +757,7 @@ function renderAllShapes(){
   //let kirbyCenterX = 0.0;
   //let kirbyCenterY = 0.0 + floatOffset;
   //let kirbyCenterZ = 0.0;
-
+  /*
   let kirbyCenterX = kirbyPos.elements[0];
   let kirbyCenterY = kirbyPos.elements[1];
   let kirbyCenterZ = kirbyPos.elements[2];
@@ -834,7 +771,7 @@ function renderAllShapes(){
     shadow.matrix.scale(0.4, 0.01, 0.4); // squished vertically into a flat oval
     shadow.render();
   }
-
+  */
   /*
   // BODY
   var body = new Sphere();
@@ -844,6 +781,7 @@ function renderAllShapes(){
   body.render();
   */
 
+  /*
   var body = new Sphere();
   body.color = [1.0, 0.6, 0.8, 1.0]; // Light pink
   body.matrix.translate(kirbyCenterX, kirbyCenterY, kirbyCenterZ);
@@ -871,7 +809,7 @@ function renderAllShapes(){
   rightArm.matrix.rotate(-g_rightArmAngle,1,0,0);
   rightArm.matrix.scale(0.3, 0.2, 0.2);
   rightArm.render();
-  /*
+  
   // MAGIC WAND
   var wand = new Cube();
   wand.color = [1.0, 0.8, 0.2, 1.0]; // Golden yellow wand
@@ -891,7 +829,7 @@ function renderAllShapes(){
   wandStar.matrix.scale(2.2, 0.2, 2.2);
   wandStar.matrix.rotate(g_wandStar, 1, 1, 0); 
   wandStar.render();
-  */
+  
 
   // LEFT FOOT
   var leftFoot = new Cube();
@@ -998,7 +936,7 @@ function renderAllShapes(){
   rightBlush.matrix.translate(kirbyCenterX + 0.15, kirbyCenterY + 0.02, kirbyCenterZ - 0.35);
   rightBlush.matrix.scale(0.08, 0.04, 0.01);
   rightBlush.render();
-  
+  */
   
   //check performance
   var duration = performance.now() - startTime;

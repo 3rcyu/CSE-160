@@ -2,13 +2,40 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Change a point color</title>
+    <title>Blocky World</title>
   </head>
 
   <body onload="main()">
-    <canvas id="webgl" width="400" height="400">
-    Please use a browser that supports "canvas"
-    </canvas>
+    <div id="canvasContainer">
+      <canvas id="webgl" width="400" height="400">
+        Please use a browser that supports "canvas"
+      </canvas>
+      <div id="crosshair">+</div>
+    </div>
+
+    <style>
+      #canvasContainer {
+        position: relative;
+        display: inline-block;
+      }
+    
+      canvas#webgl {
+        display: block;
+        background: black;
+      }
+    
+      #crosshair {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 24px;
+        pointer-events: none;
+        z-index: 10;
+      }
+    </style>
+    
 
     <div class="controls">
       <p id="numdot"> XXX </p>

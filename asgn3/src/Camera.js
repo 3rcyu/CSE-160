@@ -98,6 +98,26 @@ class Camera {
         this.at.sub(down);
         this.updateView();
       }
+
+      panUp(angle = 3) {
+        let f = new Vector3(this.at.elements);
+        f = f.sub(this.eye);
+      
+        let s = Vector3.cross(f, this.up);
+        s.normalize();
+      
+        let rotationMatrix = new Matrix4();
+        rotationMatrix.setRotate(angle, s.elements[0], s.elements[1], s.elements[2]);
+      
+        let f_prime = rotationMatrix.multiplyVector3(f);
+        this.at = new Vector3(this.eye.elements).add(f_prime);
+        this.updateView();
+      }
+      
+      panDown(angle = 3) {
+        this.panUp(-angle);
+      }
+      
       
 
     rotateYaw(pitchDelta, yawDelta) {
