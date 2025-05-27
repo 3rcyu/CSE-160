@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Blocky World</title>
+  </head>
+
+  <body onload="main()">
+    <canvas id="webgl" width="400" height="400">
+      Please use a browser that supports "canvas"
+    </canvas>
+    
+
+    <div class="controls">
+      <p id="numdot"> XXX </p>
+
+      <p></p>
+        Normals:
+          <button type="button" id="normalOn">ON</button>
+          <button type="button" id="normalOff">OFF</button>
+      <p></p>
+        Light:
+          <button type="button" id="lightOn">ON</button>
+          <button type="button" id="lightOff">OFF</button>
+      
+        <p>Light X: <input type="range" min="-250" max="250" value="0" class="slider" id="lightSliderX">
+           Light Y: <input type="range" min="-250" max="250" value="100" class="slider" id="lightSliderY">
+           Light Z: <input type="range" min="-350" max="250" value="-200" class="slider" id="lightSliderZ">
+           <p>Light Color:
+           R: <input type="range" id="lightColorR" min="0" max="255" value="255">
+           G: <input type="range" id="lightColorG" min="0" max="255" value="255">
+           B: <input type="range" id="lightColorB" min="0" max="255" value="230">
+           
+
+           <p>
+            Camera Angle:
+            <input type="range" min="0" max="360" value="0" id="cameraAngleSlider">
+          </p>
+          
+  
+      
+      <!-- Dropdown Section -->
+      <div id="notesSection">
+        <h3 onclick="toggleNotes()" style="cursor:pointer;">▼ Notes for Graders</h3>
+        <div id="notesContent" style="display:none; margin-left:10px;">
+          <p>Click and drag to pan. Q/E to pan left or right</p>
+          <p>Sliders and Buttons</p>
+          <p>Move around WASD, Space to go up, Z to go down</p>
+        </div>
+      </div>
+
+    </div>
+
+    <script src="lib/webgl-utils.js"></script>
+    <script src="lib/webgl-debug.js"></script>
+    <script src="lib/cuon-utils.js"></script>
+    <script src="lib/cuon-matrix-cse160.js"></script>
+    <script src="Point.js"></script>
+    <script src="Triangle.js"></script>
+    <script src="Circle.js"></script>
+    <script src="Cube.js"></script>
+    <script src="Sphere.js"></script>
+    <script src="DustPuff.js"></script>
+    <script src="Camera.js"></script>
+    <script src="World.js"></script>
+    <script>
+    function toggleNotes() {
+      const content = document.getElementById('notesContent');
+      if (content.style.display === 'none') {
+        content.style.display = 'block';
+      } else {
+        content.style.display = 'none';
+      }
+    }
+    </script>
+  </body>
+</html>
