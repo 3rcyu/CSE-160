@@ -28,6 +28,7 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.shadowMap.enabled = true;
 
+
 document.body.appendChild( renderer.domElement );
 
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -40,15 +41,28 @@ camera.add(listener); // Attach to camera so you hear from camera's perspective
 
 const light = new THREE.DirectionalLight(0xFFFFFF, 3);
 light.castShadow = true;
-light.position.set(-1, 10, 4);
+light.position.set(-1, 15, 20);
 scene.add(light);
 
-light.shadow.mapSize.width = 1024;
-light.shadow.mapSize.height = 1024;
-light.shadow.camera.near = 0.5;
-light.shadow.camera.far = 50;
+light.shadow.camera.left = -50;
+light.shadow.camera.right = 50;
+light.shadow.camera.top = 50;
+light.shadow.camera.bottom = -50;
 
-const geometry = new THREE.BoxGeometry(1, 1, 1);
+light.shadow.mapSize.width = 4096;
+light.shadow.mapSize.height = 4096;
+
+const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+scene.add(ambient);
+/*
+const shadowHelper = new THREE.CameraHelper(light.shadow.camera);
+scene.add(shadowHelper);
+
+//visual
+const helper = new THREE.CameraHelper(light.shadow.camera);
+scene.add(helper);
+*/
+//const geometry = new THREE.BoxGeometry(1, 1, 1);
 
 function updateCamera() {
     camera.updateProjectionMatrix();
@@ -141,49 +155,40 @@ loader.load(
         gBuilding.scale.set(2,2,2);
         gBuilding.position.set(15,0,2);
         gBuilding.rotation.y = -Math.PI / 2;
+
         gBuilding.traverse(child => {
-            if (child.isMesh) child.castShadow = true;
-          });
-          
-        scene.add(gltf.scene);
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
+        });
 
-        let inst = gBuilding.clone();
-        inst.position.set(15,0,-12);
-        scene.add(inst);
+        scene.add(gBuilding);
 
-        for(let i=0; i<3; i++){
-            let inst = gBuilding.clone();
-            inst.position.set(5*i,0,15);
-            inst.rotation.y = -Math.PI;
-            scene.add(inst);
-        }
-        for(let i=0; i<3; i++){
-            let inst = gBuilding.clone();
-            inst.position.set(-5*i,0,15);
-            inst.rotation.y = -Math.PI;
+        function addClone(x, y, z, rotY) {
+            const inst = gBuilding.clone(true);  // deep clone
+            inst.position.set(x, y, z);
+            inst.rotation.y = rotY;
+            inst.traverse(child => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                }
+            });
             scene.add(inst);
         }
 
-        for(let i=0; i<3; i++){
-            let inst = gBuilding.clone();
-            inst.position.set(5*i,0,-15);
-            inst.rotation.y = Math.PI*2;
-            scene.add(inst);
-        }
-        for(let i=0; i<2; i++){
-            let inst = gBuilding.clone();
-            inst.position.set(-5*i,0,-15);
-            inst.rotation.y = Math.PI*2;
-            scene.add(inst);
-        }
-        
+        addClone(15, 0, -12, -Math.PI / 2);
+
+        for(let i = 0; i < 3; i++) addClone(5 * i, 0, 15, -Math.PI);
+        for(let i = 0; i < 3; i++) addClone(-5 * i, 0, 15, -Math.PI);
+        for(let i = 0; i < 3; i++) addClone(5 * i, 0, -15, 0);
+        for(let i = 0; i < 2; i++) addClone(-5 * i, 0, -15, 0);
     },
 
     xhr => console.log((xhr.loaded / xhr.total * 100) + '% loaded'),
     err => console.error('An error happened loading the GLB:', err)
-
 );
-
 
 
 loader.load(
