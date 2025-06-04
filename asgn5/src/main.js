@@ -37,7 +37,7 @@ const listener = new THREE.AudioListener();
 camera.add(listener); // Attach to camera so you hear from camera's perspective
 
 const light = new THREE.DirectionalLight(0xFFFFFF, 3);
-light.position.set(-1, 2, 4);
+light.position.set(-1, 10, 4);
 scene.add(light);
 
 const geometry = new THREE.BoxGeometry(1, 1, 1);
@@ -101,10 +101,40 @@ loader.load(
         gBuilding.position.set(15,0,2);
         gBuilding.rotation.y = -Math.PI / 2;
         scene.add(gltf.scene);
+        for(let i=0; i<3; i++){
+            let inst = gBuilding.clone();
+            inst.position.set(5*i,0,15);
+            inst.rotation.y = -Math.PI;
+            scene.add(inst);
+        }
+        for(let i=0; i<3; i++){
+            let inst = gBuilding.clone();
+            inst.position.set(-5*i,0,15);
+            inst.rotation.y = -Math.PI;
+            scene.add(inst);
+        }
+
+        for(let i=0; i<3; i++){
+            let inst = gBuilding.clone();
+            inst.position.set(5*i,0,-15);
+            inst.rotation.y = Math.PI*2;
+            scene.add(inst);
+        }
+        for(let i=0; i<3; i++){
+            let inst = gBuilding.clone();
+            inst.position.set(-5*i,0,-15);
+            inst.rotation.y = Math.PI*2;
+            scene.add(inst);
+        }
+        
     },
+
     xhr => console.log((xhr.loaded / xhr.total * 100) + '% loaded'),
     err => console.error('An error happened loading the GLB:', err)
+
 );
+
+
 
 loader.load(
     'City Pack/Tree.glb',
@@ -294,6 +324,26 @@ const planeMat = new THREE.MeshPhongMaterial({
 const mesh = new THREE.Mesh(planeGeo, planeMat);
 mesh.rotation.x = Math.PI * -.5;
 scene.add(mesh);
+
+const grassTexture = new THREE.TextureLoader().load('grass.png');
+grassTexture.wrapS = THREE.RepeatWrapping;
+grassTexture.wrapT = THREE.RepeatWrapping;
+const parkSize = 25;
+grassTexture.repeat.set(parkSize/2, parkSize/2);  // Increase to tile it more
+
+const grassMaterial = new THREE.MeshPhongMaterial({
+  map: grassTexture,
+  side: THREE.DoubleSide,
+});
+
+const greenGeo = new THREE.PlaneGeometry(parkSize, parkSize);
+const greenPatch = new THREE.Mesh(greenGeo, grassMaterial);
+
+greenPatch.rotation.x = -Math.PI / 2;
+greenPatch.position.set(0, 0.01, 0);
+
+scene.add(greenPatch);
+
 
 
 
