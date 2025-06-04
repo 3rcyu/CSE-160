@@ -50,23 +50,17 @@ light.shadow.camera.far = 50;
 
 const geometry = new THREE.BoxGeometry(1, 1, 1);
 
-function makeInstance(geometry, color, x) {
-    const material = new THREE.MeshPhongMaterial({color});
-    const cube = new THREE.Mesh(geometry, material);
-    cube.position.x = x;
-    scene.add(cube);
-    return cube;
-}
-
 function updateCamera() {
     camera.updateProjectionMatrix();
 }
-   
+
+/*
 const gui = new GUI();
 gui.add(camera, 'fov', 1, 180).onChange(updateCamera);
 const minMaxGUIHelper = new MinMaxGUIHelper(camera, 'near', 'far', 0.1);
 gui.add(minMaxGUIHelper, 'min', 0.1, 50, 0.1).name('near').onChange(updateCamera);
 gui.add(minMaxGUIHelper, 'max', 0.1, 50, 0.1).name('far').onChange(updateCamera);
+*/
 
 // Load GLB model
 const loader = new GLTFLoader();
@@ -246,11 +240,11 @@ loader.load(
 let carModel = null;
 const roadPath = [];  // will store all tile center positions
 let currentPathIndex = 0;
-const carSpeed = 7;
+const carSpeed = 6;
 
 
 loader.load(
-  'Sports Car-Gzj704DXdr.glb',
+  'City Pack/Sports Car.glb',
   function (gltf) {
     carModel = gltf.scene;
     carModel.scale.set(0.25, 0.25, 0.25);  
@@ -295,7 +289,7 @@ loader.load(
         // Create positional audio and attach to police car
         const sirenSound = new THREE.PositionalAudio(listener);
 
-        // Load the siren sound and play it
+        // Load the siren sound and play
         audioLoader.load('siren.mp3', function(buffer) {
         sirenSound.setBuffer(buffer);
         sirenSound.setLoop(true);
@@ -344,17 +338,13 @@ loader.load(
         tile.castShadow = true;
         tile.receiveShadow = true;
         scene.add(tile);
-          
-
 
         // Save this tile center to path for the car
-        const pathPoint = position.clone().setY(0.5); // car height level
+        const pathPoint = position.clone().setY(0.1); // car height level
         roadPath.push(pathPoint);
       }
       
-      
-  
-    // ➡️ Straight tiles
+    //Straight tiles
     for (let i = 0; i < 4; i++) {
         placeTile(tileStraight, pos.clone(),Math.PI / 2);
         pos.add(dir.clone().multiplyScalar(tileLength));
@@ -371,9 +361,9 @@ loader.load(
         pos.add(dir.clone().multiplyScalar(tileLength));
     }
 
-    // ↱ Right turn — rotated 90° around Z axis
+    // ↱ Right turn — rotated 90° 
     placeTile(tileCorner, pos.clone(), Math.PI);
-    dir.set(-1, 0, 0); // update direction to +Z
+    dir.set(-1, 0, 0); //-X
     pos.add(dir.clone().multiplyScalar(tileLength));
 
     //More straight tiles
@@ -384,7 +374,7 @@ loader.load(
 
     // ↱ Right turn — rotated 90° around Z axis
     placeTile(tileCorner, pos.clone(), Math.PI/2);
-    dir.set(0, 0, -1); // update direction to +Z
+    dir.set(0, 0, -1); // update direction to -Z
     pos.add(dir.clone().multiplyScalar(tileLength));
 
     // ⬇️ More straight tiles
@@ -393,9 +383,9 @@ loader.load(
         pos.add(dir.clone().multiplyScalar(tileLength));
     }
 
-    // ↱ Right turn — rotated 90° around Z axis
+    // ↱ Right turn 
     placeTile(tileCorner, pos.clone(), -Math.PI*2);
-    dir.set(1, 0, 0); // update direction to +Z
+    dir.set(1, 0, 0); // update direction to +X
     pos.add(dir.clone().multiplyScalar(tileLength));
 
     // ⬇️ More straight tiles
@@ -412,9 +402,8 @@ loader.load(
   );
   
 
-
+//Checkerboard plane
 const planeSize = 30;
-     
 const tloader = new THREE.TextureLoader();
 const texture = tloader.load('checker.png');
 texture.wrapS = THREE.RepeatWrapping;
@@ -433,6 +422,7 @@ const mesh = new THREE.Mesh(planeGeo, planeMat);
 mesh.rotation.x = Math.PI * -.5;
 scene.add(mesh);
 
+//grass plane park
 const grassTexture = new THREE.TextureLoader().load('grass.png');
 grassTexture.wrapS = THREE.RepeatWrapping;
 grassTexture.wrapT = THREE.RepeatWrapping;
@@ -453,6 +443,47 @@ greenPatch.receiveShadow = true;
 scene.add(greenPatch);
 
 
+function makeInstance(geometry, color, x) {
+    const material = new THREE.MeshPhongMaterial({color});
+    const cube = new THREE.Mesh(geometry, material);
+    cube.position.x = x;
+    scene.add(cube);
+    return cube;
+}
+
+//random sphere monument
+const radius = 1.75; 
+const widthSegments = 16;
+const heightSegments = 16;
+const sphereTexture = new THREE.TextureLoader().load('marble.jpg');
+
+const sphereGeo = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+const sphereMaterial = new THREE.MeshPhongMaterial({
+    map: sphereTexture,
+  });
+  
+const sphere = new THREE.Mesh(sphereGeo, sphereMaterial);
+sphere.position.set(0, 2, 0); 
+sphere.castShadow = true;
+sphere.receiveShadow = true;
+
+scene.add(sphere);
+
+// cylinder base
+const baseRadius = 2;
+const baseHeight = 0.5;
+const radialSegments = 16;
+
+const baseGeo = new THREE.CylinderGeometry(baseRadius, baseRadius, baseHeight, radialSegments);
+const baseMaterial = new THREE.MeshPhongMaterial({ color: 'gray' });
+
+const base = new THREE.Mesh(baseGeo, baseMaterial);
+base.position.set(0, 0, 0); 
+base.castShadow = true;
+base.receiveShadow = true;
+
+scene.add(base);
+
 
 
 const sloader = new THREE.CubeTextureLoader();
@@ -469,14 +500,14 @@ scene.background = stexture;
 
 function render(time) {
     time *= 0.001;
-
+    /*
     cubes.forEach((cube, ndx) => {
         const speed = 1 + ndx * 0.1;
         const rot = time * speed;
         cube.rotation.x = rot;
         cube.rotation.y = rot;
     });
-
+    */
     if (carModel && roadPath.length > 1) {
         const target = roadPath[currentPathIndex];
         const pos = carModel.position;
@@ -505,7 +536,7 @@ function render(time) {
       
         if (chaseDist > 0.1) {
           chaseDir.normalize();
-          const chaseSpeed = 6; 
+          const chaseSpeed = 5; 
           policeModel.position.add(chaseDir.multiplyScalar(chaseSpeed * 0.016));
       
           // Face the target
@@ -522,9 +553,6 @@ function render(time) {
         blueLight.visible = !blink;
     }
 
-      
-    
-
     renderer.render(scene, camera);
     requestAnimationFrame(render);
 }
@@ -537,13 +565,14 @@ document.addEventListener('click', () => {
     }
   }, { once: true }); // only run once
   
-
 function main() {
+    /*
     cubes = [
         makeInstance(geometry, 0x44aa88,  0),
         makeInstance(geometry, 0x8844aa, -2),
         makeInstance(geometry, 0xaa8844,  2),
     ];
+    */
     requestAnimationFrame(render);
 }
 
