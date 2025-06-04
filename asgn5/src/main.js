@@ -18,10 +18,10 @@ const far = 100;
 const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 camera.position.set(0, 10, 20);
 //camera.position.z = 10;
-
+const canvas = document.querySelector('#c');
 const renderer = new THREE.WebGLRenderer({
     antialias: true,
-    //canvas,
+    canvas,
     logarithmicDepthBuffer: true,
     alpha: true,
   });
@@ -79,6 +79,33 @@ loader.load(
     err => console.error('An error happened loading the GLB:', err)
   );
 
+
+loader.load(
+    'City Pack/Brown Building.glb',
+    function (gltf) {
+        const bBuilding = gltf.scene;
+        bBuilding.scale.set(2,2,2);
+        bBuilding.position.set(15,0,6.75);
+        bBuilding.rotation.y = -Math.PI / 2;
+        scene.add(gltf.scene);
+    },
+    xhr => console.log((xhr.loaded / xhr.total * 100) + '% loaded'),
+    err => console.error('An error happened loading the GLB:', err)
+);
+
+loader.load(
+    'City Pack/Building Green.glb',
+    function (gltf) {
+        const gBuilding = gltf.scene;
+        gBuilding.scale.set(2,2,2);
+        gBuilding.position.set(15,0,2);
+        gBuilding.rotation.y = -Math.PI / 2;
+        scene.add(gltf.scene);
+    },
+    xhr => console.log((xhr.loaded / xhr.total * 100) + '% loaded'),
+    err => console.error('An error happened loading the GLB:', err)
+);
+
 loader.load(
     'City Pack/Tree.glb',
     function (gltf) {
@@ -94,7 +121,7 @@ loader.load(
 let carModel = null;
 const roadPath = [];  // will store all tile center positions
 let currentPathIndex = 0;
-const carSpeed = 10;
+const carSpeed = 7;
 
 
 loader.load(
@@ -138,7 +165,7 @@ loader.load(
         sirenSound.setBuffer(buffer);
         sirenSound.setLoop(true);
         sirenSound.setRefDistance(10);
-        sirenSound.setVolume(0.1);
+        sirenSound.setVolume(0.05);
         sirenSound.play();
         });
 
@@ -320,7 +347,7 @@ function render(time) {
       
         if (chaseDist > 0.1) {
           chaseDir.normalize();
-          const chaseSpeed = 8; // slightly faster than main car
+          const chaseSpeed = 6; 
           policeModel.position.add(chaseDir.multiplyScalar(chaseSpeed * 0.016));
       
           // Face the target
