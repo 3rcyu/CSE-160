@@ -26,6 +26,8 @@ const renderer = new THREE.WebGLRenderer({
     alpha: true,
   });
 renderer.setSize( window.innerWidth, window.innerHeight );
+renderer.shadowMap.enabled = true;
+
 document.body.appendChild( renderer.domElement );
 
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -37,8 +39,14 @@ const listener = new THREE.AudioListener();
 camera.add(listener); // Attach to camera so you hear from camera's perspective
 
 const light = new THREE.DirectionalLight(0xFFFFFF, 3);
+light.castShadow = true;
 light.position.set(-1, 10, 4);
 scene.add(light);
+
+light.shadow.mapSize.width = 1024;
+light.shadow.mapSize.height = 1024;
+light.shadow.camera.near = 0.5;
+light.shadow.camera.far = 50;
 
 const geometry = new THREE.BoxGeometry(1, 1, 1);
 
@@ -67,12 +75,48 @@ dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/'); // Use
 loader.setDRACOLoader(dracoLoader);
 
 loader.load(
+    'City Pack/Pizza Corner.glb',
+    function (gltf) {
+      const pBuilding = gltf.scene;
+      pBuilding.scale.set(2,2,2);
+      pBuilding.position.set(-8.75,0,-15);
+      pBuilding.rotation.y = -Math.PI / 2;
+      pBuilding.traverse(child => {
+        if (child.isMesh) child.castShadow = true;
+      });
+      
+      scene.add(gltf.scene);
+    },
+    xhr => console.log((xhr.loaded / xhr.total * 100) + '% loaded'),
+    err => console.error('An error happened loading the GLB:', err)
+  );
+
+loader.load(
+    'City Pack/Big Building.glb',
+    function (gltf) {
+        const bigBuilding = gltf.scene;
+        bigBuilding.scale.set(2,2,2);
+        bigBuilding.position.set(18,0,-5);
+        bigBuilding.rotation.y = -Math.PI / 2;
+        bigBuilding.traverse(child => {
+            if (child.isMesh) child.castShadow = true;
+          });
+        scene.add(gltf.scene);
+    },
+    xhr => console.log((xhr.loaded / xhr.total * 100) + '% loaded'),
+    err => console.error('An error happened loading the GLB:', err)
+);
+
+loader.load(
     'City Pack/Building Red.glb',
     function (gltf) {
       const rBuilding = gltf.scene;
       rBuilding.scale.set(2,2,2);
       rBuilding.position.set(15,0,11);
       rBuilding.rotation.y = -Math.PI / 2;
+      rBuilding.traverse(child => {
+        if (child.isMesh) child.castShadow = true;
+      });
       scene.add(gltf.scene);
     },
     xhr => console.log((xhr.loaded / xhr.total * 100) + '% loaded'),
@@ -87,6 +131,9 @@ loader.load(
         bBuilding.scale.set(2,2,2);
         bBuilding.position.set(15,0,6.75);
         bBuilding.rotation.y = -Math.PI / 2;
+        bBuilding.traverse(child => {
+            if (child.isMesh) child.castShadow = true;
+          });
         scene.add(gltf.scene);
     },
     xhr => console.log((xhr.loaded / xhr.total * 100) + '% loaded'),
@@ -100,7 +147,16 @@ loader.load(
         gBuilding.scale.set(2,2,2);
         gBuilding.position.set(15,0,2);
         gBuilding.rotation.y = -Math.PI / 2;
+        gBuilding.traverse(child => {
+            if (child.isMesh) child.castShadow = true;
+          });
+          
         scene.add(gltf.scene);
+
+        let inst = gBuilding.clone();
+        inst.position.set(15,0,-12);
+        scene.add(inst);
+
         for(let i=0; i<3; i++){
             let inst = gBuilding.clone();
             inst.position.set(5*i,0,15);
@@ -120,7 +176,7 @@ loader.load(
             inst.rotation.y = Math.PI*2;
             scene.add(inst);
         }
-        for(let i=0; i<3; i++){
+        for(let i=0; i<2; i++){
             let inst = gBuilding.clone();
             inst.position.set(-5*i,0,-15);
             inst.rotation.y = Math.PI*2;
@@ -142,11 +198,50 @@ loader.load(
       const tree = gltf.scene;
       tree.scale.set(0.01,0.01,0.01);
       tree.position.set(3,0,4);
+      tree.traverse(child => {
+        if (child.isMesh) child.castShadow = true;
+      });
+      
       scene.add(gltf.scene);
     },
     xhr => console.log((xhr.loaded / xhr.total * 100) + '% loaded'),
     err => console.error('An error happened loading the GLB:', err)
   );
+
+  loader.load(
+    'City Pack/Street Light.glb',
+    function (gltf) {
+      const lamp = gltf.scene;
+      lamp.scale.set(1, 1, 1);
+      lamp.position.set(9, 0, 10);
+  
+      lamp.traverse(child => {
+        if (child.isMesh) child.castShadow = true;
+      });
+  
+      scene.add(lamp);
+  
+      // Create and configure the spotlight
+      const color = 0xFFFFFF;
+      const intensity = 150;
+      const slight = new THREE.SpotLight(color, intensity, 15, Math.PI / 6, 0.5, 2);
+      slight.castShadow = true;
+  
+      // Position the spotlight above lamp
+      slight.position.set(9, 5.5, 12); 
+      slight.target.position.set(9, 0, 12); // Aim at the ground
+  
+      scene.add(slight);
+      scene.add(slight.target);
+  
+      //helper to visualize
+      //const helper = new THREE.SpotLightHelper(slight);
+      //scene.add(helper);
+    },
+    xhr => console.log((xhr.loaded / xhr.total * 100) + '% loaded'),
+    err => console.error('An error happened loading the GLB:', err)
+  );
+  
 
 let carModel = null;
 const roadPath = [];  // will store all tile center positions
@@ -159,8 +254,13 @@ loader.load(
   function (gltf) {
     carModel = gltf.scene;
     carModel.scale.set(0.25, 0.25, 0.25);  
-    carModel.position.set(0, 0.5, 0);     // Position 
+    carModel.position.set(10, -0.1, 10);     // Position 
+    carModel.traverse(child => {
+        if (child.isMesh) child.castShadow = true;
+      });
+      
     scene.add(gltf.scene);
+    
   },
   xhr => console.log((xhr.loaded / xhr.total * 100) + '% loaded'),
   err => console.error('An error happened loading the GLB:', err)
@@ -174,15 +274,20 @@ loader.load(
     function (gltf) {
       policeModel = gltf.scene;
       policeModel.scale.set(0.35, 0.35, 0.35);  // Scale 
-      policeModel.position.set(0, 0.5, 30);     // Position 
+      policeModel.position.set(15, 0, 16);     // Position 
+      
+      policeModel.traverse(child => {
+        if (child.isMesh) child.castShadow = true;
+      });
+      
 
         // Create red and blue lights
         redLight = new THREE.PointLight(0xff0000, 1, 5);
         blueLight = new THREE.PointLight(0x0000ff, 1, 5);
 
         // Position lights on top of the car 
-        redLight.position.set(-0.3, 2, 0);
-        blueLight.position.set(0.3, 2, 0);
+        redLight.position.set(-0.3, 1.5, 0);
+        blueLight.position.set(0.3, 1.5, 0);
 
         // Attach to police car
         policeModel.add(redLight);
@@ -236,7 +341,10 @@ loader.load(
           tile.rotation.z = angleZ;
         }
 
+        tile.castShadow = true;
+        tile.receiveShadow = true;
         scene.add(tile);
+          
 
 
         // Save this tile center to path for the car
@@ -341,7 +449,7 @@ const greenPatch = new THREE.Mesh(greenGeo, grassMaterial);
 
 greenPatch.rotation.x = -Math.PI / 2;
 greenPatch.position.set(0, 0.01, 0);
-
+greenPatch.receiveShadow = true;
 scene.add(greenPatch);
 
 
